@@ -64,10 +64,13 @@ func main() {
 	for {
 		select {
 		case <-messages:
+			fmt.Println("waiting for workers to be done")
 			wg.Wait()
+			fmt.Println("quiting")
 			return
 		default:
 			messages <- rand.Int()
+			fmt.Println("sent new message")
 			time.Sleep(time.Millisecond * 100)
 		}
 	}
@@ -79,6 +82,7 @@ WaitForInterrupt ждёт пока в канал quit придёт signal interr
 */
 func WaitForInterrupt(quit <-chan os.Signal, messages chan int) {
 	<-quit
+	fmt.Println("received signal interrupt. closing messages channel")
 	close(messages)
 }
 
@@ -104,6 +108,7 @@ func Work(ch <-chan int, number int, wg *sync.WaitGroup) {
 	for {
 		num, ok := <-ch
 		if !ok {
+			fmt.Printf("Worker %d: done\n", number)
 			break
 		}
 		fmt.Printf("Worker %d says: %d\n", number, num)
